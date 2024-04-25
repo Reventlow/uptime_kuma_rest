@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-cskh52g9e89rxu2r&#=j$&_k#2)w_s6bs06c@!u%%rw!fy5ah$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'drf_yasg',
 
     # my apps
-    'uptime_kuma_rest_app.apps.TodoAppConfig',
+    'uptime_kuma_rest_app.apps.UptimeKumaRestAppConfig',
 ]
 
 MIDDLEWARE = [
@@ -106,10 +108,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
+
+
 
 
 
@@ -122,7 +129,7 @@ TIME_ZONE = 'Europe/Copenhagen'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

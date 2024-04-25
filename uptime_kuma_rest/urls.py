@@ -18,12 +18,27 @@ from django.contrib import admin
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Uptime Kuma API",
+      default_version='v1',
+      description="API documentation for Uptime Kuma",
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('uptime_kuma/', include('uptime_kuma_rest_app.urls', namespace='uptime_kuma_rest_app')),
-    path('', RedirectView.as_view(pattern_name='uptime_kuma_rest_app:list'), name='home'),
+    #path('', RedirectView.as_view(pattern_name='uptime_kuma_rest_app:list'), name='home'),
     path('pages/', include('pages_app.urls', namespace='pages_app')),
     path('accounts/', include('authenticate_app.urls',  namespace='authenticate_app')),
-    path('uptime_kuma/api/', include('uptime_kuma_rest_app.api_urls')),
+    #path('uptime_kuma/api/', include('uptime_kuma_rest_app.api_urls')),
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
