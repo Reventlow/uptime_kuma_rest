@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}U/Nord elev evaluering|  Registrer burger{% endblock %}
+{% block content %}
+    <div class="col-6 col-md-4 offset-md-3">
+        <h2>Registrer profil info</h1>
+            <form method="POST" action="{% url 'register_user' %}">
+                {% csrf_token %}
+                {% if form.errors %}
+                    <div class="alert alert-danger  alert-dismissible fade show" role="alert">
+                        <p> Der er fejl i formen</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-secondary">Register bruger</button>
+            </form>
+    </div>
+
+
+{% endblock %}

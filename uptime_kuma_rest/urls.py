@@ -15,8 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.contrib import admin
+from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('uptime_kuma/', include('uptime_kuma_rest_app.urls', namespace='uptime_kuma_rest_app')),
+    path('', RedirectView.as_view(pattern_name='uptime_kuma_rest_app:list'), name='home'),
+    path('pages/', include('pages_app.urls', namespace='pages_app')),
+    path('accounts/', include('authenticate_app.urls',  namespace='authenticate_app')),
+    path('uptime_kuma/api/', include('uptime_kuma_rest_app.api_urls')),
 ]
