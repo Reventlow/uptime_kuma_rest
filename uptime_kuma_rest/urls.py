@@ -41,4 +41,5 @@ urlpatterns = [
     path('accounts/', include('authenticate_app.urls',  namespace='authenticate_app')),
     #path('uptime_kuma/api/', include('uptime_kuma_rest_app.api_urls')),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+
 ]

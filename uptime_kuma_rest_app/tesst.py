@@ -1,5 +1,4 @@
 import requests
-import json
 
 # API endpoint
 url = "http://127.0.0.1:8000/uptime_kuma/api/heartbeats/receive/"
@@ -21,17 +20,14 @@ data = {
     "msg": "Monitor is up"
 }
 
-# Convert dictionary to JSON string
-json_data = json.dumps(data)
-
 # Headers
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Bearer d8dd34fb6539564c053ba993d7574df4eeee6ff5"
+    "Authorization": "Token 7a3af99fb748ab47583c8f04952bac6d7bb91296"
 }
 
 # Send POST request
-response = requests.post(url, data=json_data, headers=headers)
+response = requests.post(url, json=data, headers=headers)
 
 # Print response
 print(response.text)

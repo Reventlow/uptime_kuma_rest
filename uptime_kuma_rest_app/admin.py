@@ -2,6 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from .models import UserProfile, MonitorGroup, Monitor, Status, Heartbeat, Note
+from rest_framework.authtoken.models import Token
+
+class TokenAdmin(admin.ModelAdmin):
+    list_display = ['key', 'user', 'created']
+    fields = ['user']
+    ordering = ['-created']
+    search_fields = ['user__username', 'key']
 
 
 # Inline for UserProfile in User admin
