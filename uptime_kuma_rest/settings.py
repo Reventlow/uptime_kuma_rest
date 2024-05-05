@@ -21,8 +21,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'drf_yasg',  # Swagger generation tool
+    'drf_spectacular',  # Replace drf_yasg with drf_spectacular
     'uptime_kuma_rest_app.apps.UptimeKumaRestAppConfig',  # Your custom app
+    'pages_app.apps.PagesAppConfig',  # Your custom app
+    'authenticate_app.apps.AuthenticateAppConfig',  # Your custom app
 ]
 
 MIDDLEWARE = [
@@ -40,7 +42,7 @@ ROOT_URLCONF = 'uptime_kuma_rest.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,18 +89,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Set drf-spectacular as the schema class
 }
 
-
-# drf_yasg settings
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Token': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        }
-    }
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your Project API',
+    'DESCRIPTION': 'API documentation for Your Project',
+    'VERSION': '1.0.0',
+    # Other configuration options can be specified here
 }
 
 # Internationalization
