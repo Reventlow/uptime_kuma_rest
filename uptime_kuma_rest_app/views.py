@@ -1,4 +1,14 @@
-from django.db.models import OuterRef, Subquery, Exists, Q, Max
+from django.db.models import OuterRef, Subquery, Q, Prefetch
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.shortcuts import redirect, get_object_or_404
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views.generic import TemplateView
+from django.utils.timezone import now
 from rest_framework import viewsets, status as rf_status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.views import APIView
@@ -6,44 +16,40 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
-from django.views.generic import TemplateView
 from .models import Monitor, Heartbeat, Status as StatusModel, Note
 from .serializers import MonitorSerializer, HeartbeatSerializer, StatusSerializer, NoteSerializer
-from django.utils.timezone import now
 
 
-# web views
+
+# Web views
 class MonitorStatusTemplateView(TemplateView):
     template_name = 'monitors_status.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Using Subquery to get the last status and forced_down flag from Heartbeats
-        last_heartbeat = Heartbeat.objects.filter(
+        last_forced_down = Heartbeat.objects.filter(
             monitor=OuterRef('pk')
-        ).order_by('-timestamp')
+        ).order_by('-timestamp').values('forced_down')[:1]
+
+        last_status_text = Heartbeat.objects.filter(
+            monitor=OuterRef('pk')
+        ).order_by('-timestamp').values('status__status_text')[:1]
 
         monitors = Monitor.objects.annotate(
-            last_status=Subquery(last_heartbeat.values('status__status_text')[:1]),
-            last_forced_down=Subquery(last_heartbeat.values('forced_down')[:1])
-        ).filter(
-            ~Q(last_status='1'),
-            last_forced_down=False
+            is_last_forced_down=Subquery(last_forced_down),
+            last_status=Subquery(last_status_text)
+        ).exclude(
+            Q(last_status='up') | Q(is_last_forced_down=True)
+        ).prefetch_related(
+            Prefetch('heartbeats', queryset=Heartbeat.objects.order_by('-timestamp'), to_attr='latest_heartbeat')
         )
 
-        # Add the latest heartbeat and its notes to the monitor objects for context
-        for monitor in monitors:
-            latest_heartbeat = last_heartbeat.filter(monitor=monitor).first()
-            monitor.latest_heartbeat = latest_heartbeat
-            monitor.latest_notes = latest_heartbeat.notes.all() if latest_heartbeat else []
-
         context['monitors'] = monitors
-        context['now'] = now()
+        context['last_checked'] = now() if not monitors else None
         return context
 
 # API views
-
 class MonitorViewSet(viewsets.ModelViewSet):
     queryset = Monitor.objects.all()
     serializer_class = MonitorSerializer
@@ -71,7 +77,7 @@ class NoteViewSet(viewsets.ModelViewSet):
 @extend_schema(
     methods=['get'],
     responses={200: MonitorSerializer(many=True)},
-    description="Retrieves all monitors where the last heartbeat status is not '1' and not forced down, including the most recent heartbeat and all associated notes for each monitor."
+    description="Retrieves all monitors where the last heartbeat status is not 'up', and the latest heartbeat is not forced down, including the most recent heartbeat and all associated notes for each monitor."
 )
 class MonitorStatusView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -90,7 +96,7 @@ class MonitorStatusView(APIView):
                 ).order_by('-timestamp').values('forced_down')[:1]
             )
         ).filter(
-            last_status__ne='1',
+            last_status__ne='up',
             last_forced_down=False
         )
 
@@ -130,3 +136,14 @@ def receive_heartbeat(request):
     heartbeat.save()
     response_data = HeartbeatSerializer(heartbeat).data
     return Response(response_data, status=rf_status.HTTP_201_CREATED)
+
+@require_POST
+@csrf_exempt
+def toggle_forced_down(request, heartbeat_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=403)
+
+    heartbeat = get_object_or_404(Heartbeat, id=heartbeat_id)
+    heartbeat.forced_down = not heartbeat.forced_down
+    heartbeat.save()
+    return JsonResponse({'success': True, 'forced_down': heartbeat.forced_down})

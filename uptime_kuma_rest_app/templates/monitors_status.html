@@ -12,30 +12,63 @@
 </style>
 
 <h1>Monitor Status</h1>
-    <ul>
-{% for monitor in monitors %}
-    <li>
-        <strong>{{ monitor.name }}</strong>
-        - Last Status:
-        {% if monitor.latest_heartbeat %}
-            {{ monitor.latest_heartbeat.status.status_text }}
-        {% else %}
-            No data
-        {% endif %}
-        <ul>
-            {% for note in monitor.latest_heartbeat.notes.all %}
-                <li>{{ note.timestamp }}: {{ note.message }} by {{ note.user.username }}</li>
-            {% empty %}
-                <li>No notes available.</li>
-            {% endfor %}
-        </ul>
-    </li>
-{% empty %}
-        <div class="text-success">
-            <div align="center" class="bi bi-check-circle checkmark-large"></div><br>
-            <div align="center"> No monitors are down<br>
-            <small>Last checked: {{ now|date:"Y-m-d H:i:s" }}</small></div>
-        </div>
-{% endfor %}
-</ul>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Monitor Name</th>
+            <th>Last Heartbeat Time</th>
+            <th>Forced Down</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for monitor in monitors %}
+        <tr>
+            <td>{{ monitor.name }}</td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    {{ monitor.latest_heartbeat.timestamp|date:"H:i:s d-m-Y" }}
+                {% else %}
+                    No recent heartbeat
+                {% endif %}
+            </td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="forcedDownSwitch{{ monitor.latest_heartbeat.id }}"
+                                hx-post="{% if monitor.latest_heartbeat.id %}{% url 'uptime_kuma_rest_app:toggle_forced_down' monitor.latest_heartbeat.id %}{% endif %}"
+                                hx-target="#forcedDownSwitch{{ monitor.latest_heartbeat.id }}"
+                                hx-swap="outerHTML"
+                                {% if monitor.latest_heartbeat.forced_down %} checked {% endif %}>
+                        <label class="form-check-label" for="forcedDownSwitch{{ monitor.latest_heartbeat.id }}"></label>
+                    </div>
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    <ul>
+                        {% for note in monitor.latest_heartbeat.notes.all %}
+                            <li>{{ note.timestamp|date:"Y-m-d H:i:s" }}: {{ note.message }} by {{ note.user.username }}</li>
+                        {% empty %}
+                            <li>No notes available.</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    No notes
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="4" class="text-center text-success">
+                <div class="bi bi-check-circle checkmark-large"></div><br>
+                No monitors are down<br>
+                <small>Last checked: {{ now|date:"H:i:s d-m-Y" }}</small>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
