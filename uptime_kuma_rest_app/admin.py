@@ -3,6 +3,9 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from .models import UserProfile, MonitorGroup, Monitor, Status, Heartbeat, Note
 from rest_framework.authtoken.models import Token
+from .models import Heartbeat
+from django.forms import ModelForm, ModelMultipleChoiceField
+from django.contrib.auth.models import User
 
 class TokenAdmin(admin.ModelAdmin):
     list_display = ['key', 'user', 'created']
@@ -67,11 +70,34 @@ class StatusAdmin(admin.ModelAdmin):
 
 
 # Heartbeat Admin
+# Custom form for the Heartbeat admin
+class HeartbeatAdminForm(ModelForm):
+    assigned_users = ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        required=False,  # Make it not required to have any users assigned
+        widget=admin.widgets.FilteredSelectMultiple("Users", is_stacked=False)
+    )
+
+    class Meta:
+        model = Heartbeat
+        fields = '__all__'
+
+# Heartbeat Admin
 @admin.register(Heartbeat)
 class HeartbeatAdmin(admin.ModelAdmin):
-    list_display = ['monitor', 'status', 'timestamp', 'forced_down']
+    form = HeartbeatAdminForm
+    list_display = ['monitor', 'status', 'timestamp', 'forced_down', 'display_assigned_users']
     list_filter = ['status', 'forced_down']
     search_fields = ['monitor__name', 'status__status_text']
+
+    def display_assigned_users(self, obj):
+        return ", ".join([user.username for user in obj.assigned_users.all()])
+
+    display_assigned_users.short_description = 'Assigned Users'
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        return form
 
 
 # Note Admin

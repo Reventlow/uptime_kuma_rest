@@ -18,7 +18,9 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from .models import Monitor, Heartbeat, Status as StatusModel, Note
 from .serializers import MonitorSerializer, HeartbeatSerializer, StatusSerializer, NoteSerializer
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 # Web views
@@ -40,14 +42,19 @@ class MonitorStatusTemplateView(TemplateView):
             is_last_forced_down=Subquery(last_forced_down),
             last_status=Subquery(last_status_text)
         ).exclude(
-            Q(last_status='up') | Q(is_last_forced_down=True)
+            Q(last_status='up') & Q(is_last_forced_down=False)
         ).prefetch_related(
-            Prefetch('heartbeats', queryset=Heartbeat.objects.order_by('-timestamp'), to_attr='latest_heartbeat')
+            Prefetch('heartbeats', queryset=Heartbeat.objects.order_by('-timestamp').prefetch_related('assigned_users'), to_attr='all_heartbeats')
         )
 
+        for monitor in monitors:
+            monitor.latest_heartbeat = monitor.all_heartbeats[0] if monitor.all_heartbeats else None
+
         context['monitors'] = monitors
-        context['last_checked'] = now() if not monitors else None
+        context['last_checked'] = now() if monitors else None
         return context
+
+
 
 # API views
 class MonitorViewSet(viewsets.ModelViewSet):
@@ -137,13 +144,16 @@ def receive_heartbeat(request):
     response_data = HeartbeatSerializer(heartbeat).data
     return Response(response_data, status=rf_status.HTTP_201_CREATED)
 
+
 @require_POST
-@csrf_exempt
 def toggle_forced_down(request, heartbeat_id):
+    print(f"POST request handled by toggle_forced_down with ID: {heartbeat_id}")
+
     if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Authentication required'}, status=403)
+        return HttpResponse('Unauthorized', status=401)
 
     heartbeat = get_object_or_404(Heartbeat, id=heartbeat_id)
     heartbeat.forced_down = not heartbeat.forced_down
     heartbeat.save()
-    return JsonResponse({'success': True, 'forced_down': heartbeat.forced_down})
+    return HttpResponse('solved', status=200)
+
