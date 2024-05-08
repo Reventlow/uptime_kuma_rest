@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   web-app:
-    image: robounord/uptime-kuma-rest:1.00
+    image: robounord/uptime-kuma-rest:1.01
     container_name: web-app
     networks:
     - public
@@ -14,7 +14,6 @@ services:
       - traefik.http.services.monitor-api.loadbalancer.server.port=8000
       - traefik.http.services.monitor-api.loadbalancer.server.scheme=http
       - traefik.http.services.monitor-api.loadbalancer.passHostHeader=true
-    #volumes:
 networks:
   public:
     external: true
