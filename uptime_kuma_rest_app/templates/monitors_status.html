@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Uptime-Kuma Status{% endblock %}
+
+{% block content %}
+<style>
+    .checkmark-large {
+        color: green;         /* Set the color */
+        font-size: 72px;      /* Set the icon size */
+        font-weight: bold;    /* Make it bold */
+    }
+</style>
+
+<h1>Monitor Status</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Monitor Name</th>
+            <th>Last Heartbeat Time</th>
+            <th>Forced Down</th>
+            <th>Notes</th>
+            <th>Assigned Users</th> <!-- New column for assigned users -->
+        </tr>
+    </thead>
+    <tbody>
+    {% for monitor in monitors %}
+        <tr>
+            <td>{{ monitor.name }}</td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    {{ monitor.latest_heartbeat.timestamp|date:"H:i d/m-Y" }}
+                {% else %}
+                    No recent heartbeat
+                {% endif %}
+            </td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="forcedDownSwitch{{ monitor.latest_heartbeat.id }}"
+                                hx-post="{% if monitor.latest_heartbeat.id %}{% url 'uptime_kuma_rest_app:toggle_forced_down' monitor.latest_heartbeat.id %}{% endif %}"
+                                hx-target="#forcedDownSwitch{{ monitor.latest_heartbeat.id }}"
+                                hx-swap="outerHTML"
+                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                {% if monitor.latest_heartbeat.forced_down %} checked {% endif %}>
+                        <label class="form-check-label" for="forcedDownSwitch{{ monitor.latest_heartbeat.id }}"></label>
+                    </div>
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    <ul>
+                        {% for note in monitor.latest_heartbeat.notes.all %}
+                            <li>{{ note.timestamp|date:"H:i d/m-Y" }}: <b>{{ note.user.username }}</b></br>{{ note.message }}</b></li>
+                        {% empty %}
+                            <li>No notes available.</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    No notes
+                {% endif %}
+            </td>
+            <td>
+                {% if monitor.latest_heartbeat %}
+                    {% for user in monitor.latest_heartbeat.assigned_users.all %}
+                        {{ user.username }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        No assigned users
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="5" class="text-center text-success">
+                <div class="bi bi-check-circle checkmark-large"></div><br>
+                No monitors are down<br>
+                <small>Last checked: {{ now|date:"H:i d/m-Y" }}</small>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    setTimeout(function(){
+        window.location.reload(1);
+    }, 60000); // 60000 milliseconds = 1 minute
+</script>
+{% endblock %}

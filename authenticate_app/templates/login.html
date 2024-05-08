@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}U/Nord elev evaluering | Login{% endblock %}
+{% block content %}
+
+
+    <div class="col-6 col-md-4 offset-md-3">
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Indtast brugernavn" name="username">
+            </div>
+            <div class="mb-3">
+                <input type="password" class="form-control" placeholder="Indtast Adgangskode" name="password">
+            </div>
+
+            <button type="submit" class="btn btn-secondary">Login</button>
+        </form>
+        <br/>
+        {% if messages %}
+            <div class="alert alert-danger  alert-dismissible fade show" role="alert">
+               Forkert brugernavn og / eller adgangskode eller du er blevet logget ud
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
