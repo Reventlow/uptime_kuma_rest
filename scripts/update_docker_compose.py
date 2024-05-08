@@ -1,7 +1,7 @@
 import yaml
 
-service_name = "worker"
-docker_image_name = "robounord/teacherhours_connect_dean"
+service_name = "web-app" # Update this to the name of the service in your docker-compose.yml
+docker_image_name = "robounord/uptime-kuma-rest" # Update this to your Docker image name, e.g. "my-username/my-image-name"
 
 def update_docker_compose(version: str) -> int:
     with open("docker-compose.yml", 'r') as f:
