@@ -52,6 +52,7 @@ class MonitorStatusTemplateView(TemplateView):
 
         context['monitors'] = monitors
         context['last_checked'] = now() if monitors else None
+        context['now'] = now()
         return context
 
 

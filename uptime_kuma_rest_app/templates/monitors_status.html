@@ -28,7 +28,7 @@
             <td>{{ monitor.name }}</td>
             <td>
                 {% if monitor.latest_heartbeat %}
-                    {{ monitor.latest_heartbeat.timestamp|date:"H:i d-m-Y" }}
+                    {{ monitor.latest_heartbeat.timestamp|date:"H:i d/m-Y" }}
                 {% else %}
                     No recent heartbeat
                 {% endif %}
@@ -52,7 +52,7 @@
                 {% if monitor.latest_heartbeat %}
                     <ul>
                         {% for note in monitor.latest_heartbeat.notes.all %}
-                            <li>{{ note.timestamp|date:"H:i d-m-Y" }}: <b>{{ note.user.username }}</b></br>{{ note.message }}</b></li>
+                            <li>{{ note.timestamp|date:"H:i d/m-Y" }}: <b>{{ note.user.username }}</b></br>{{ note.message }}</b></li>
                         {% empty %}
                             <li>No notes available.</li>
                         {% endfor %}
@@ -78,7 +78,7 @@
             <td colspan="5" class="text-center text-success">
                 <div class="bi bi-check-circle checkmark-large"></div><br>
                 No monitors are down<br>
-                <small>Last checked: {{ now|date:"H:i d-m-Y" }}</small>
+                <small>Last checked: {{ now|date:"H:i d/m-Y" }}</small>
             </td>
         </tr>
     {% endfor %}

@@ -16,7 +16,7 @@ def login_user(request):
         else:
             # Return an 'invalid login' error message.
             messages.error(request, ("Forkert brugernavn og/eller adgangskode"))
-            return redirect('login')
+            return redirect('authenticate_app:login')
     else:
         return render(request, 'login.html', {})
 

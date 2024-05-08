@@ -34,22 +34,33 @@
                                 Redoc API
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'authenticate_app:logout' %}">Log ud</a>
-                        </li>
-                        {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'authenticate_app:login' %}">Log ind</a>
-                        </li>
+
                         {% endif %}
                     </ul>
-                </div>
+                       <!-- Login/Logud -->
+            <div class="d-flex">
+                {% if user.is_authenticated %}
+                    <div class="me-2">
+                    {% if user.is_superuser %}
+                        <a href="{% url 'admin:index' %}" class="btn btn-danger  btn-lg " tabindex="-1" role="button"
+                           aria-disabled="true">Database</a> -{% endif %}
+                    <a href="{% url 'authenticate_app:logout' %}" class="btn btn-primary  btn-lg " tabindex="-1"
+                       role="button"
+                       aria-disabled="true">Logud</a>
+                {% else %}
+                    <a href="{% url 'authenticate_app:login' %}" class="btn btn-primary  btn-lg " tabindex="-1"
+                       role="button"
+                       aria-disabled="true">Login</a>
+                    </div>
+                {% endif %}
             </div>
-        </nav>
-        <div class="container">
-            <br/>
-            {% block content %}{% endblock %}
         </div>
+    </div>
+</nav>
+<div class="container">
+    <br/>
+    {% block content %}{% endblock %}
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/localization/messages_da.min.js"></script>
     </body>
 </html>

@@ -1,15 +1,23 @@
 from pathlib import Path
+from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cskh52g9e89rxu2r&#=j$&_k#2)w_s6bs06c@!u%%rw!fy5ah$'
+try:
+    SECRET_KEY = config('SECRET_KEY')
+    DEBUG = config('DEBUG', default=False, cast=bool)
+
+except:
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    DEBUG = os.environ.get('DEBUG')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.monitor-api.unord.dk', 'monitor-api.unord.dk']
 
 # Application definition
 INSTALLED_APPS = [
@@ -58,12 +66,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'uptime_kuma_rest.wsgi.application'
 
 # Database configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+try:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': config('PSQL_DATABASENAME'),
+            'USER': config('PSQL_USER'),
+            'PASSWORD': config('PSQL_PASSWORD'),
+            'HOST': config('PSQL_HOST'),
+            'PORT': config('PSQL_PORT'),
+        }
     }
-}
+except:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('PSQL_DATABASENAME'),
+            'USER': os.environ.get('PSQL_USER'),
+            'PASSWORD': os.environ.get('PSQL_PASSWORD'),
+            'HOST': os.environ.get('PSQL_HOST'),
+            'PORT': os.environ.get('PSQL_PORT'),
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
