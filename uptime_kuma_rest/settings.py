@@ -65,6 +65,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'uptime_kuma_rest.wsgi.application'
 
+# Trust the X-Forwarded-Host header (only if you trust your proxy)
+USE_X_FORWARDED_HOST = True
+
+# Set CSRF trusted origins if you are serving multiple subdomains or domains
+CSRF_TRUSTED_ORIGINS = ['https://*.unord.dk', 'https://monitor-api.unord.dk']
+
+# As Traefik passes on the protocol used by the client in the X-Forwarded-Proto header
+# this tells Django to use the secure flag on the session cookie
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 # Database configuration
 try:
     DATABASES = {
