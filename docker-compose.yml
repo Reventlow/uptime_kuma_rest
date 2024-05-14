@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   web-app:
-    image: robounord/uptime-kuma-rest:1.04
+    image: robounord/uptime-kuma-rest:1.05
     container_name: web-app
     networks:
     - public
