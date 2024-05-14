@@ -17,7 +17,7 @@ except:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.monitor-api.unord.dk', 'monitor-api.unord.dk']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.monitor-api.unord.dk', 'monitor-api.unord.dk', '0.0.0.0']
 
 # Application definition
 INSTALLED_APPS = [
@@ -118,8 +118,8 @@ REST_FRAMEWORK = {
 
 # drf-spectacular settings
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Your Project API',
-    'DESCRIPTION': 'API documentation for Your Project',
+    'TITLE': 'Uptime Kuma REST API',
+    'DESCRIPTION': 'API documentation for the Uptime Kuma REST API.',
     'VERSION': '1.0.0',
     # Other configuration options can be specified here
 }
